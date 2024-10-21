@@ -6,7 +6,7 @@
 #    By: vberdugo <vberdugo@student.42barcelon      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/10/18 13:53:17 by vberdugo          #+#    #+#              #
-#    Updated: 2024/10/18 13:55:17 by vberdugo         ###   ########.fr        #
+#    Updated: 2024/10/21 10:16:09 by vberdugo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,9 +20,13 @@ LIBFT = $(LIBFT_DIR)/libft.a
 INCLUDE = pipex.h libft/libft.h a
 
 CC = gcc
+
 CFLAGS = -Wall -Wextra -Werror -I src/ #-fsanitize=address
 
-all: $(NAME)
+all: libs $(NAME)
+
+libs:
+	@make -C libft
 
 $(NAME): $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) $(OBJS) -L$(LIBFT_DIR) -lft -o $(NAME)
