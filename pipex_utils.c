@@ -6,34 +6,11 @@
 /*   By: vberdugo <vberdugo@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:27:21 by vberdugo          #+#    #+#             */
-/*   Updated: 2024/10/24 08:49:47 by victor           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:05:56 by vberdugo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-/* ************************************************************************** */
-/* Displays an error message for an incorrect number of arguments and         */
-/* provides the correct usage format. Terminates the program with an exit     */
-/* status of 0 after printing the message to the appropriate file descriptors.*/
-/* ************************************************************************** */
-void	handle_invalid_argument_count(void)
-{
-	ft_putstr_fd("Error: Incorrect number of arguments\n", 2);
-	ft_putstr_fd("Usage: ./pipex infile cmd1 cmd2 outfile\n", 1);
-	exit(0);
-}
-
-/* ************************************************************************** */
-/* Prints an error message indicating an execution failure using perror,      */
-/* which provides a description of the error. Terminates the program with     */
-/* an exit status of -1.                                                      */
-/* ************************************************************************** */
-void	handle_execution_error(void)
-{
-	perror("Execution Error");
-	exit(-1);
-}
 
 /* ************************************************************************** */
 /* Frees each string in a dynamically allocated array of strings and          */

@@ -6,12 +6,17 @@
 /*   By: vberdugo <vberdugo@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:12:50 by vberdugo          #+#    #+#             */
-/*   Updated: 2024/10/24 08:46:35 by victor           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:11:59 by vberdugo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
+void	handle_execution_error(void)
+{
+	perror("Execution Error");
+	exit(-1);
+}
 /* ************************************************************************** */
 /* Executes a given command by first splitting the command into arguments,    */
 /* then finding the full path of the executable using environment variables.  */
@@ -33,7 +38,6 @@ static void	run_command(char *command, char **env)
 	if (execve(command_full_path, split_command, env) == -1)
 	{
 		deallocate_string_array(split_command);
-		free(command_full_path);
 		handle_execution_error();
 	}
 	deallocate_string_array(split_command);
@@ -85,11 +89,18 @@ int	main(int argc, char **argv, char **env)
 	pid_t	process_pid;
 
 	if (argc != 5)
-		handle_invalid_argument_count();
+	{
+		ft_putstr_fd("Error: Incorrect number of arguments\n", 2);
+		ft_putstr_fd("Usage: ./pipex infile cmd1 cmd2 outfile\n", 1);
+		exit(0);
+	}
 	else
 	{
 		if (pipe(pipe_fds) == -1)
-			handle_execution_error();
+		{
+			perror("Execution Error");
+			exit(-1);
+		}
 		process_pid = fork();
 		if (process_pid == -1)
 			handle_execution_error();
