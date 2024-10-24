@@ -6,77 +6,96 @@
 /*   By: vberdugo <vberdugo@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:12:50 by vberdugo          #+#    #+#             */
-/*   Updated: 2024/10/18 13:57:49 by vberdugo         ###   ########.fr       */
+/*   Updated: 2024/10/24 08:46:35 by victor           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void	execute_command(char *cmd, char **env)
+/* ************************************************************************** */
+/* Executes a given command by first splitting the command into arguments,    */
+/* then finding the full path of the executable using environment variables.  */
+/* Manages memory for the command arguments and handles errors if execution   */
+/* fails, freeing all allocated resources as needed.                          */
+/* ************************************************************************** */
+static void	run_command(char *command, char **env)
 {
-	char	**command_array;
-	char	*command_path;
+	char	**split_command;
+	char	*command_full_path;
 
-	command_array = ft_split(cmd, ' ');
-	command_path = extract_path(command_array[0], env);
-	if (!command_path)
+	split_command = ft_split(command, ' ');
+	command_full_path = find_command_path(split_command[0], env);
+	if (!command_full_path)
 	{
-		free_array(command_array);
-		handle_error();
+		deallocate_string_array(split_command);
+		handle_execution_error();
 	}
-	if (execve(command_path, command_array, env) == -1)
+	if (execve(command_full_path, split_command, env) == -1)
 	{
-		free_array(command_array);
-		free(command_path);
-		handle_error();
+		deallocate_string_array(split_command);
+		free(command_full_path);
+		handle_execution_error();
 	}
-	free_array(command_array);
-	free(command_path);
+	deallocate_string_array(split_command);
+	free(command_full_path);
 }
 
-static void	child_process(int *pipe_ends, char **arguments, char **env)
+/* ************************************************************************** */
+/* Handles the child process by opening the input file and redirecting        */
+/* its content to the standard input. Redirects the pipe output to standard   */
+/* output, closes the unused pipe end, and executes the specified command.    */
+/* Manages file and pipe descriptors and handles errors during execution.     */
+/* ************************************************************************** */
+static void	process_child(int *pipe_fds, char **arguments, char **env)
 {
-	int	file_descriptor;
+	int	input_fd;
 
-	file_descriptor = open(arguments[1], O_RDONLY);
-	if (file_descriptor == -1)
-		handle_error();
-	dup2(file_descriptor, STDIN_FILENO);
-	dup2(pipe_ends[1], STDOUT_FILENO);
-	close(pipe_ends[0]);
-	execute_command(arguments[2], env);
+	input_fd = open(arguments[1], O_RDONLY);
+	if (input_fd == -1)
+		handle_execution_error();
+	dup2(input_fd, STDIN_FILENO);
+	dup2(pipe_fds[1], STDOUT_FILENO);
+	close(pipe_fds[0]);
+	run_command(arguments[2], env);
 }
 
-static void	parent_process(int *pipe_ends, char **arguments, char **env)
+/* ************************************************************************** */
+/* Handles the parent process by opening the output file and redirecting      */
+/* the pipe input to the standard input. Redirects standard output to the     */
+/* specified output file, closes the unused pipe end, and executes the        */
+/* second command. Manages file and pipe descriptors and handles errors       */
+/* during execution.                                                          */
+/* ************************************************************************** */
+static void	process_parent(int *pipe_fds, char **arguments, char **env)
 {
-	int	file_descriptor;
+	int	output_fd;
 
-	file_descriptor = open(arguments[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
-	if (file_descriptor == -1)
-		handle_error();
-	dup2(pipe_ends[0], STDIN_FILENO);
-	dup2(file_descriptor, STDOUT_FILENO);
-	close(pipe_ends[1]);
-	execute_command(arguments[3], env);
+	output_fd = open(arguments[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	if (output_fd == -1)
+		handle_execution_error();
+	dup2(pipe_fds[0], STDIN_FILENO);
+	dup2(output_fd, STDOUT_FILENO);
+	close(pipe_fds[1]);
+	run_command(arguments[3], env);
 }
 
 int	main(int argc, char **argv, char **env)
 {
-	int		pipe_ends[2];
-	pid_t	process_id;
+	int		pipe_fds[2];
+	pid_t	process_pid;
 
 	if (argc != 5)
-		handle_exit();
+		handle_invalid_argument_count();
 	else
 	{
-		if (pipe(pipe_ends) == -1)
-			handle_error();
-		process_id = fork();
-		if (process_id == -1)
-			handle_error();
-		if (!process_id)
-			child_process(pipe_ends, argv, env);
-		waitpid(process_id, NULL, 0);
-		parent_process(pipe_ends, argv, env);
+		if (pipe(pipe_fds) == -1)
+			handle_execution_error();
+		process_pid = fork();
+		if (process_pid == -1)
+			handle_execution_error();
+		if (process_pid == 0)
+			process_child(pipe_fds, argv, env);
+		waitpid(process_pid, NULL, 0);
+		process_parent(pipe_fds, argv, env);
 	}
 }

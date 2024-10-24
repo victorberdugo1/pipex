@@ -6,7 +6,7 @@
 /*   By: vberdugo <vberdugo@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:18:55 by vberdugo          #+#    #+#             */
-/*   Updated: 2024/10/21 10:09:59 by vberdugo         ###   ########.fr       */
+/*   Updated: 2024/10/24 08:40:22 by victor           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@
 # include <sys/wait.h>
 # include <sys/types.h>
 
-void	handle_exit(void);
-void	handle_error(void);
-void	free_array(char **arr);
-char	*extract_path(char *cmd, char **env);
+void	handle_invalid_argument_count(void);
+void	handle_execution_error(void);
+void	deallocate_string_array(char **array);
+char	*find_command_path(char *command, char **env);
 
 #endif
