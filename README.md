@@ -1,5 +1,9 @@
 # pipex
 
+<p align="center">
+  <img src="pipex.jpg" style="width:60%; margin:auto;" />
+</p>
+
 ## Descripción
 
 Este proyecto va sobre el manejo de pipes en C, permitiendo la ejecución de múltiples comandos en la terminal de forma encadenada. La implementación replica el comportamiento del comando de shell `"< archivo1 comando1 | comando2 > archivo2"`.
